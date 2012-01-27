@@ -1,0 +1,7 @@
+Gem containing utilities for generating, parsing, and otherwise manipulating iTunes XML files.
+
+TODO: port specs from original "rails" app
+fix dependencies:
+  inject dependencies into code (i.e. for mocking in tests)
+  add nokogiri to .gemspec
+  remove unnecessary dependencies (i.e. paperclip)
