@@ -1,23 +1,23 @@
+require 'object_cache'
 module Itunes
-  class Track
+  class Library::Track
     XPATH  = '/plist/dict/dict/dict'
     include ObjectCache
-    class Invalid < Exception; end
     ATTRIBUTES = ["Track ID", "Name", "Album", "Artist", "Total Time", "Genre", "Persistent ID", "Location"]
     ATTR_SYMBOLS =  [:id, :name, :album, :artist, :genre, :persistent_id, :total_time, :location]
     ATTR_MAP = Hash[ATTRIBUTES.zip(ATTR_SYMBOLS)]
 
     attr_accessor *ATTR_SYMBOLS
     def self.csv_header
-      Track::ATTRIBUTES.join(Itunes::SEPARATOR)
+      Track::ATTRIBUTES.join(Itunes::Library::SEPARATOR)
     end
 
     def self.create attributes = {}
       new(attributes)
     end
 
-    def self.parse(parser)
-      parser.xml.xpath(XPATH).map do |track_entry|
+    def self.parse(itunes_library_parser)
+      itunes_library_parser.xml.xpath(XPATH).map do |track_entry|
         key = nil
         track_attributes = track_entry.children.reduce({}) do |track_hash, attribute|
           if attribute.name == 'key' && Track::ATTRIBUTES.include?(attribute.text)
@@ -36,12 +36,12 @@ module Itunes
       ATTR_MAP.each_pair do |attr, method|
         send("#{method}=", options[attr]) if options[attr]
       end
-      raise Invalid, "missing ID" unless id
+      raise Library::Invalid, "missing ID" unless id
       self.class.cache[id] = self
     end
 
     def csv_row
-      Track::ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}.join(Itunes::SEPARATOR)
+      Track::ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}.join(Itunes::Library::SEPARATOR)
     end
   end # Track
 end

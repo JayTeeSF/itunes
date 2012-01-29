@@ -1,7 +1,7 @@
+require 'object_cache'
 module Itunes
-  class Playlist
+  class Library::Playlist
     include ObjectCache
-    class Invalid < Exception; end
 
     XPATH  = '/plist/dict/array/dict'
     # <key>Name</key><string>Library</string>
@@ -30,7 +30,7 @@ module Itunes
     attr_accessor *ATTR_SYMBOLS
     attr_reader :track_ids
     def self.csv_header
-      Playlist::ATTRIBUTES.join(Itunes::SEPARATOR) + Itunes::SEPARATOR + Track.csv_header
+      Playlist::ATTRIBUTES.join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + Track.csv_header
     end
 
     def self.create attributes = {}
@@ -43,12 +43,12 @@ module Itunes
       ATTR_MAP.each_pair do |attr, method|
         send("#{method}=", options[attr]) if options[attr]
       end
-      raise Invalid, "missing ID" unless id
+      raise Library::Invalid, "missing ID" unless id
       self.class.cache[id] = self
     end
 
-    def self.parse(parser)
-      parser.xml.xpath(XPATH).map do |playlist_entry|
+    def self.parse(itunes_library_parser)
+      itunes_library_parser.xml.xpath(XPATH).map do |playlist_entry|
         key = nil
         playlist_hash = {}
         playlist_entry.children.each do |attribute|
@@ -87,7 +87,7 @@ module Itunes
     def csv_rows
       return "" unless tracks.present?
       tracks.collect do |t|
-        (Playlist::ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}).join(Itunes::SEPARATOR) + Itunes::SEPARATOR + t.csv_row
+        (Playlist::ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}).join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + t.csv_row
       end.join("\n")
     end
   end # Playlist

@@ -1,22 +1,31 @@
 module Itunes
   #File.open("./tmp/foo.xml",'w') do |f|
-  #  f.puts Itunes::Library::Generator.library
+  #  f.puts Itunes::Library::Generator.generate
+  #  f.puts Itunes::Library::Generator.generate(:username => "my_home_dir")
+  #  OR
+  #  f.puts Itunes::Library::Generator.generate(:music_dir => "./tmp/")
   #end
   #
   # Stress test:
   #File.open("./tmp/foo.xml",'w') do |f|
-  #  f.puts Itunes::Library::Generator.library(10_000, 1500, 300)
+  #  f.puts Itunes::Library::Generator.generate(:num_tracks => 10_000, :num_playlists => 1500, :tracks_per_playlist => 300)
   #end
   module Library::Generator
     extend self
 
-    def library(num_tracks=1, num_playlists=1, tracks_per_playlist=1)
+    def generate(options={})
+      num_tracks = options[:num_tracks] || 1
+      num_playlists = options[:num_playlists] || 1
+      tracks_per_playlist = options[:tracks_per_playlist] || 1
+
       track_ids = (1..num_tracks).to_a
       playlist_ids = (1..num_playlists).to_a
 
-      result = header
+      username = options[:username] || default_username
+      users_music_dir = options[:music_dir] || music_dir(username)
+      result = header(html_safe(users_music_dir))
       result << tracks_wrapper_header
-      track_ids.each {|i| result << track(i, "track_#{i}")}
+      track_ids.each {|i| result << track(i, "track_#{i}", :music_dir => users_music_dir)}
       result << tracks_wrapper_footer
 
       result << playlists_wrapper_header
@@ -30,7 +39,15 @@ module Itunes
       result << footer
     end
 
-    def header
+    def default_username
+      'your_home_directory'
+    end
+
+    def music_dir(username=default_username)
+      "file://localhost/Users/#{username}/Music/iTunes/iTunes Music/"
+    end
+
+    def header(html_safe_music_dir)
       result = <<-EOD
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
@@ -42,7 +59,7 @@ module Itunes
       <key>Minor Version</key><integer>1</integer>
       <key>Application Version</key><string>4.6</string>
       <key>Music Folder</key>
-      <string>file://localhost/Users/niel/Music/iTunes/iTunes%20Music/</string>
+      <string>#{html_safe_music_dir}</string>
       <key>Library Persistent ID</key><string>8E84CC790968E27F</string>
       EOD
     end
@@ -54,16 +71,45 @@ module Itunes
       EOTS
     end
 
+    def html_safe(str)
+      str.gsub(/\s+/,'%20')
+    end
+
+    def default_track_extension
+      '.m4p'
+    end
+
+    def music_file(name, extension=default_track_extension)
+      html_safe(name) + extension
+    end
+
+    def default_release_name
+      'Prime Time'
+    end
+
+    def default_artist_name
+      'Count Basie & His Orchestra'
+    end
+
     def track(track_id, name, options={})
+      release_name = options[:release_name] || default_release_name
+      artist_name = options[:artist_name] || default_artist_name
+      html_safe_artist_name = html_safe artist_name
+      html_safe_release_name = html_safe release_name
+      track_extension = options[:track_extension] || default_track_extension
+      track_file = music_file(name, track_extension)
+      genre = options[:genre] || 'Jazz'
+      _music_dir = html_safe(options[:music_dir] || music_dir)
+
       result = <<-EOT
       <key>#{track_id}</key>
       <dict>
       <key>Track ID</key><integer>#{track_id}</integer>
       <key>Name</key><string>#{name}</string>
-      <key>Artist</key><string>#{options[:artist_name] || 'Count Basie & His Orchestra'}</string>
+      <key>Artist</key><string>#{artist_name}</string>
       <key>Composer</key><string>Bernie/Pinkard/Casey</string>
-      <key>Album</key><string>#{options[:release_name] || 'Prime Time'}</string>
-      <key>Genre</key><string>Jazz</string>
+      <key>Album</key><string>#{release_name}</string>
+      <key>Genre</key><string>#{genre}</string>
       <key>Kind</key><string>Protected AAC audio file</string>
       <key>Size</key><integer>3771502</integer>
       <key>Total Time</key><integer>219173</integer>
@@ -83,7 +129,7 @@ module Itunes
       <key>Artwork Count</key><integer>1</integer>
       <key>File Type</key><integer>1295274016</integer>
       <key>File Creator</key><integer>1752133483</integer>
-      <key>Location</key><string>file://localhost/Users/niel/Music/iTunes/iTunes%20Music/Count%20Basie%20&%20His%20Orchestra/Prime%20Time/03%20Sweet%20Georgia%20Brown.m4p</string>
+      <key>Location</key><string>#{_music_dir}#{html_safe_artist_name}/#{html_safe_release_name}/#{track_file}</string>
       <key>File Folder Count</key><integer>4</integer>
       <key>Library Folder Count</key><integer>1</integer>
       </dict>
@@ -103,13 +149,13 @@ module Itunes
       EOPS
     end
 
-
     def playlist_tracks_wrapper_header(playlist_id, playlist_title, options={})
+      persistent_id = options[:persistent_id] || '88CED99A2F698F3C'
       result = <<-EOPTS
       <dict>
       <key>Name</key><string>#{playlist_title}</string>
       <key>Playlist ID</key><integer>#{playlist_id}</integer>
-      <key>Playlist Persistent ID</key><string>#{options[:persistent_id] || '88CED99A2F698F3C'}</string>
+      <key>Playlist Persistent ID</key><string>#{persistent_id}</string>
       <key>All Items</key><true/>
       <key>Playlist Items</key>
       <array>

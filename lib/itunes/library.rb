@@ -1,6 +1,7 @@
 module Itunes
   class Library
-
+    class Invalid < Exception; end
+    SEPARATOR = "\t"
     attr_reader :id
     attr_accessor :playlists, :tracks, :mode
 
@@ -9,9 +10,9 @@ module Itunes
       'Library Persistent ID'
     end
 
-    def self.parse(parser)
+    def self.parse(itunes_library_parser)
       key = nil
-      id_attr = parser.xml.xpath(XPATH).children.detect do |attribute|
+      id_attr = itunes_library_parser.xml.xpath(XPATH).children.detect do |attribute|
         if attribute.name == 'key' && attribute.text == id_key
           key = id_key
           false
@@ -21,10 +22,10 @@ module Itunes
         end
       end
 
-      new(id_attr.text, :mode => parser.mode).tap do |library|
-        library.tracks = Track.parse(parser)
+      new(id_attr.text, :mode => itunes_library_parser.mode).tap do |library|
+        library.tracks = Track.parse(itunes_library_parser)
         unless library.ignore_playlists?
-          library.playlists = Playlist.parse(parser)
+          library.playlists = Playlist.parse(itunes_library_parser)
         end
       end
     end
@@ -33,6 +34,7 @@ module Itunes
     def ignore_playlists?
       mode == Parser::DEFAULT_MODE
     end
+
     def csv_header
       ignore_playlists? ?  Track.csv_header : Playlist.csv_header
     end
@@ -59,3 +61,4 @@ module Itunes
     end
   end # Library
 end
+Dir.glob("#{File.dirname(__FILE__) + '/library'}/*.rb").each {|f| require(f)}

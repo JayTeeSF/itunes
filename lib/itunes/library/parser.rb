@@ -1,3 +1,5 @@
+# input_filename = Rails.root + 'features/iTunes Sample.xml'
+# Itunes::Library::Parser.parse_local(input_filename)
 module Itunes
   class Library::Parser
 
@@ -20,9 +22,9 @@ module Itunes
     def self.parse_local(input_filename, options={})
       output_filename = (options[:out_doc] || Rails.root + 'tmp/parsed.csv').to_s
       options[:out_doc] ||= output_filename
-      pseudo_doc = Itunes::PseudoDoc.new(input_filename)
+      library_file_obj = Itunes::LibraryFile.new(input_filename)
 
-      parser = Itunes::Library::Parser.new( pseudo_doc, options )
+      parser = new( library_file_obj, options )
       parser.library = Itunes::Library.parse( parser )
 
       File.open(output_filename, 'w') do |f|
@@ -31,13 +33,13 @@ module Itunes
       puts "open #{output_filename}"
     end
 
-    def self.parse doc_obj, options = {}
-      return unless EXPECTED_CONTENT_TYPES.include?(options[:content_type] || doc_obj.content_type)
-      new(doc_obj, options).parse
+    def self.parse library_file_obj, options = {}
+      return unless EXPECTED_CONTENT_TYPES.include?(options[:content_type] || library_file_obj.content_type)
+      new(library_file_obj, options).parse
     end
 
-    def xml
-      Nokogiri::XML(File.open(input_document.path, 'r'))
+    def xml(parser=Nokogiri::XML)
+      parser(input_document.read)
     end
 
     # move to CSV module - interface-method
