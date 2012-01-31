@@ -30,7 +30,7 @@ module Itunes
     attr_accessor *ATTR_SYMBOLS
     attr_reader :track_ids
     def self.csv_header
-      Playlist::ATTRIBUTES.join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + Track.csv_header
+      ATTRIBUTES.join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + Track.csv_header
     end
 
     def self.create attributes = {}
@@ -52,9 +52,9 @@ module Itunes
         key = nil
         playlist_hash = {}
         playlist_entry.children.each do |attribute|
-          if attribute.name == 'key' && ([Playlist.track_ids_key] + Playlist::ATTRIBUTES).include?(attribute.text)
+          if attribute.name == 'key' && ([track_ids_key] + ATTRIBUTES).include?(attribute.text)
             key = attribute.text
-          elsif key && key == Playlist.track_ids_key
+          elsif key && key == track_ids_key
             # parse track_ids from the current attribute:
             track_id_key = nil
             attribute.xpath(TRACK_ID_XPATH).children.each do |track_id_attribute|
@@ -87,7 +87,7 @@ module Itunes
     def csv_rows
       return "" unless tracks.present?
       tracks.collect do |t|
-        (Playlist::ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}).join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + t.csv_row
+        (ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}).join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + t.csv_row
       end.join("\n")
     end
   end # Playlist

@@ -9,7 +9,7 @@ module Itunes
 
     attr_accessor *ATTR_SYMBOLS
     def self.csv_header
-      Track::ATTRIBUTES.join(Itunes::Library::SEPARATOR)
+      ATTRIBUTES.join(Itunes::Library::SEPARATOR)
     end
 
     def self.create attributes = {}
@@ -20,7 +20,7 @@ module Itunes
       itunes_library_parser.xml.xpath(XPATH).map do |track_entry|
         key = nil
         track_attributes = track_entry.children.reduce({}) do |track_hash, attribute|
-          if attribute.name == 'key' && Track::ATTRIBUTES.include?(attribute.text)
+          if attribute.name == 'key' && ATTRIBUTES.include?(attribute.text)
             key = attribute.text
           elsif key
             track_hash[key] = attribute.text
@@ -41,7 +41,7 @@ module Itunes
     end
 
     def csv_row
-      Track::ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}.join(Itunes::Library::SEPARATOR)
+      ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}.join(Itunes::Library::SEPARATOR)
     end
   end # Track
 end
