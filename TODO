@@ -1,5 +1,5 @@
 done:
-  removed Rails dependency 
+  removed Rails dependency
   add dependencies to gemspec (Nokogiri)
   inject dependencies (e.g. Nokogiri, File)
   refactor [in progress]
@@ -10,11 +10,14 @@ done:
   o  extract Rake task(s) from original Rails app
 
 todo:
+  o  re-organize:
+     library - playlist - track
+     library-file::generator, ::parser, (::playlist, ::track)
+
   o  behavior specs (left todo):
      - library
      - playlist
      - track
   ?  consider renaming to itunes_library (thus removing top-level anorexic "Itunes" module)
-  ?  consider "hiding" subclasses of Library (e.g. Library::Playlist, ::Generator, etc)
 
 

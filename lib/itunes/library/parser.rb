@@ -10,7 +10,7 @@ module Itunes
 
     attr_accessor :mode
     attr_reader :input_document
-    attr_reader :output_path, :file_class #, :file_util_class
+    attr_reader :output_path, :file_class
     attr_writer :library
 
     def initialize in_doc, options = {}
@@ -18,7 +18,6 @@ module Itunes
       @output_path = (!!options[:out_doc]) ? options[:out_doc] : in_doc.path(OUTPUT_FORMAT.to_sym)
       @mode = options[:mode]
       @file_class = options[:file_class] || File
-      #@file_util_class = options[:file_util_class] || FileUtils
       @skip_paperclip = options.has_key?(:skip_paperclip) ? options[:skip_paperclip] : !self.class.defined_constants?('Paperclip::Tempfile')
     end
 
@@ -47,9 +46,7 @@ module Itunes
     end
 
     def parse
-      temp_file.tap do |f|
-        f.puts to_csv
-      end
+      temp_file.tap { |f| f.puts to_csv }
     end
 
     def library

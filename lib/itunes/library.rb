@@ -1,23 +1,12 @@
 module Itunes
   class Library
     class Invalid < Exception; end
-    SEPARATOR = "\t"
-    attr_reader :id
-    attr_accessor :playlists, :tracks, :mode, :parser
 
     XPATH  = '/plist/dict'
-    def self.id_key
-      'Library Persistent ID'
-    end
-
-    def self.generate(options={})
-      Generator.generate(options)
-    end
-
     def self.parse(itunes_library_parser)
       key = nil
       id_attr = itunes_library_parser.xml.xpath(XPATH).children.detect do |attribute|
-        if attribute.name == 'key' && attribute.text == id_key
+        if attribute.name == KEY && attribute.text == id_key
           key = id_key
           false
         elsif key
@@ -25,7 +14,17 @@ module Itunes
           true
         end
       end
-      new(id_attr.text, :mode => itunes_library_parser.mode, :parser => itunes_library_parser)
+      create(id_attr.text, :mode => itunes_library_parser.mode, :parser => itunes_library_parser)
+    end
+
+    def self.id_key
+      'Library Persistent ID'
+    end
+
+    # TODO: (re-)move this method
+    # Library::File.generate, maybe...
+    def self.generate(options={})
+      Generator.generate(options)
     end
 
     def playlists
@@ -45,10 +44,6 @@ module Itunes
       ignore_playlists? ?  Track.csv_header : Playlist.csv_header
     end
 
-    def to_csv
-      csv_header + "\n" + csv_rows
-    end
-
     def csv_rows
       if ignore_playlists?
         return "" if tracks.empty?
@@ -59,11 +54,25 @@ module Itunes
       end
     end
 
+    def self._attributes
+     []
+    end
+
+    %w{delimitable file generator music_selection parser playlist track}.each do |_file|
+      require("#{::File.dirname(__FILE__) + '/library'}/#{_file}.rb")
+    end
+    include MusicSelection
+    include Itunes::Library::Delimitable
+
+    attr_reader :id
+    attr_writer :playlists, :tracks
+    attr_accessor :mode, :parser
+
     def initialize(id_string, options={})
-      @mode = options[:mode] || Parser::DEFAULT_MODE
       @id = id_string
+      @mode = options[:mode] || Parser::DEFAULT_MODE
       @parser = options[:parser]
+      super
     end
   end # Library
 end
-Dir.glob("#{File.dirname(__FILE__) + '/library'}/*.rb").each {|f| require(f)}

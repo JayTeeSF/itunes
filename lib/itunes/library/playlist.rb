@@ -1,7 +1,51 @@
-require 'object_cache'
 module Itunes
   class Library::Playlist
-    include ObjectCache
+    def self._attr_names
+      ["Playlist ID", "Name", "Playlist Persistent ID", "Parent Persistent ID"]
+    end
+
+    def self._attr_symbols
+      [:id, :name, :persistent_id, :parent_persistent_id]
+    end
+
+    def self._attributes
+      _attr_symbols
+    end
+    include Library::MusicSelection
+
+    attr_reader :track_ids
+    def initialize(options={})
+      clear_track_cache
+      #@track_ids = options[Library::Playlist.track_ids_key] || []
+      @track_ids = options[:track_ids_key] || []
+      super
+    end
+
+    def <<(track_id)
+      clear_track_cache
+      @track_ids << track_id
+    end
+    alias :push :<<
+
+    def clear_track_cache
+      @tracks = nil
+    end
+
+    def tracks
+      @tracks ||= Track.lookup_all(track_ids.uniq)
+    end
+
+    def self.csv_header
+      super + Itunes::Library::DELIMITER + Track.csv_header
+    end
+
+    def csv_rows
+      return "" unless tracks.present?
+      tracks.collect do |t|
+        csv_row.join(Itunes::Library::DELIMITER) + Itunes::Library::DELIMITER + t.csv_row
+      end.join("\n")
+    end
+    include Itunes::Library::Delimitable
 
     XPATH  = '/plist/dict/array/dict'
     # <key>Name</key><string>Library</string>
@@ -11,40 +55,16 @@ module Itunes
     #
     # TRACK_ID_XPATH  = '/plist/dict/array/dict/array/dict'
     TRACK_ID_XPATH  = '../array/dict'
-    #	<key>Playlist Items</key>
-    #	<array>
-    #		<dict>
-    #			<key>Track ID</key><integer>3096</integer>
-    #		</dict>
-    #	....
-    #	</array>
-
+    TRACK_ID_ATTR  = 'Track ID'
+    # <key>Playlist Items</key>
+    # <array>
+    #  <dict>
+    #   <key>Track ID</key><integer>3096</integer>
+    #  </dict>
+    # ....
+    # </array>
     def self.track_ids_key
       'Playlist Items'
-    end
-
-    ATTRIBUTES = ["Playlist ID", "Name", "Playlist Persistent ID", "Parent Persistent ID"]
-    ATTR_SYMBOLS =  [:id, :name, :persistent_id, :parent_persistent_id]
-    ATTR_MAP = Hash[ATTRIBUTES.zip(ATTR_SYMBOLS)]
-
-    attr_accessor *ATTR_SYMBOLS
-    attr_reader :track_ids
-    def self.csv_header
-      ATTRIBUTES.join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + Track.csv_header
-    end
-
-    def self.create attributes = {}
-      new(attributes)
-    end
-
-    def initialize(options={})
-      @track_ids = options[:track_ids] || []
-
-      ATTR_MAP.each_pair do |attr, method|
-        send("#{method}=", options[attr]) if options[attr]
-      end
-      raise Library::Invalid, "missing ID" unless id
-      self.class.cache[id] = self
     end
 
     def self.parse(itunes_library_parser)
@@ -52,43 +72,38 @@ module Itunes
         key = nil
         playlist_hash = {}
         playlist_entry.children.each do |attribute|
-          if attribute.name == 'key' && ([track_ids_key] + ATTRIBUTES).include?(attribute.text)
+          if new_known_key?(attribute, [track_ids_key] + _attr_names)
             key = attribute.text
-          elsif key && key == track_ids_key
-            # parse track_ids from the current attribute:
-            track_id_key = nil
-            attribute.xpath(TRACK_ID_XPATH).children.each do |track_id_attribute|
-              if track_id_attribute.name == 'key' && track_id_attribute.text == 'Track ID'
-                track_id_key = true #track_id_attribute.text
-              elsif track_id_key
-                playlist_hash[:track_ids] ||= []
-                playlist_hash[:track_ids] << track_id_attribute.text
-                track_id_key = nil
-              end
-            end
           elsif key
-            playlist_hash[key] = attribute.text
-            key = nil
+            if key == track_ids_key
+              playlist_hash[track_ids_key] ||= []
+              playlist_hash[track_ids_key] |= extract_track_ids_from(attribute)
+              # not sure if we should clear key, at this point: key = nil
+            else
+              playlist_hash[key] = attribute.text
+              key = nil
+            end
           end
         end
-        create playlist_hash
+        create extract_params(
+          playlist_hash, {
+          :for_keys => playlist_hash.keys,
+          :as => {Library::Playlist.track_ids_key => :track_ids_key}
+        })
       end
     end # parse
 
-    def <<(track_id)
-      @track_ids << track_id
-    end
-    alias :push :<<
-
-    def tracks
-      @tracks ||= Track.lookup_all(track_ids.uniq)
-    end
-
-    def csv_rows
-      return "" unless tracks.present?
-      tracks.collect do |t|
-        (ATTRIBUTES.map {|attribute| self.send(ATTR_MAP[attribute]) || ""}).join(Itunes::Library::SEPARATOR) + Itunes::Library::SEPARATOR + t.csv_row
-      end.join("\n")
+    def self.extract_track_ids_from(attribute)
+      track_id_key = nil
+      attribute.xpath(TRACK_ID_XPATH).children.reduce([]) do |memo, track_id_attribute|
+        if new_key?(track_id_attribute) && TRACK_ID_ATTR == track_id_attribute.text
+          track_id_key = true
+        elsif track_id_key
+          memo << track_id_attribute.text
+          track_id_key = nil
+        end
+        memo
+      end
     end
   end # Playlist
 end
