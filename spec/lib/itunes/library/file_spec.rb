@@ -16,38 +16,46 @@ describe Itunes::Library::File do
   end
 
   context "with a valid argument" do
-    context "without a mock_path_reader" do
-      subject { Itunes::Library::File.new(file_path) }
+    context "without a mock file" do
+      let(:lib_file) { Itunes::Library::File.new(file_path) }
       it "should return its name" do
         File.should_receive(:basename).with(file_path)
-        subject.file_name
+        lib_file.file_name
       end
 
       it "should return the default content_type" do
-        subject.content_type.should == Itunes::Library::File::DEFAULT_CONTENT_TYPE
+        lib_file.content_type.should == Itunes::Library::File::DEFAULT_CONTENT_TYPE
       end
 
       it "should return its path" do
-        subject.path.should == file_path
+        lib_file.path.should == file_path
       end
 
       it "should return its contents" do
-        File.should_receive(:open).with(file_path, 'r')
-        subject.read
+        file_double = double('file')
+        file_double.should_receive(:read).and_return("content")
+        File.should_receive(:new).with(file_path, 'r').and_return(file_double)
+        lib_file.read.should == "content"
       end
     end
 
-    context "with mock_path_reader" do
-      # or use StringIO ...
-      let(:file_content) { {file_path => StringIO.new("file contents begin\r\nfile contents end")} }
-      let(:mock_path_reader) {
-        double("path reader", :open => file_content[file_path], :basename => file_path)
-      }
-      subject { Itunes::Library::File.new(file_path, :reader => mock_path_reader) }
-      its(:file_name) { should == file_path }
-      its(:read) { should == file_content[file_path] }
-      its(:content_type) { should == Itunes::Library::File::DEFAULT_CONTENT_TYPE }
-      its(:path) { should == file_path }
+    context "with mock file" do
+      let(:str_file) { StringIO.new("file contents begin\r\nfile contents end") }
+      let(:lib_file) { Itunes::Library::File.new(file_path, :file => str_file) }
+      it "should return its name" do
+        lib_file.file_name.should == File.basename(file_path)
+      end
+      it "should return its contents" do
+        expected = str_file.read
+        str_file.rewind
+        lib_file.read.should == expected
+      end
+      it "should return the default content type" do
+        lib_file.content_type.should == Itunes::Library::File::DEFAULT_CONTENT_TYPE
+      end
+      it "should return its path" do
+        lib_file.path.should == file_path
+      end
     end
   end
 end

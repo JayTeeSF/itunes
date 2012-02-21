@@ -40,6 +40,19 @@ module Itunes
       mode == Parser::DEFAULT_MODE
     end
 
+    def self._attr_names
+     []
+    end
+    def self._attributes
+     []
+    end
+
+    %w{delimitable file generator music_selection parser playlist track}.each do |_file|
+      require("#{::File.dirname(__FILE__) + '/library'}/#{_file}.rb")
+    end
+    include MusicSelection
+    include Itunes::Library::Delimitable
+
     def csv_header
       ignore_playlists? ?  Track.csv_header : Playlist.csv_header
     end
@@ -54,25 +67,15 @@ module Itunes
       end
     end
 
-    def self._attributes
-     []
-    end
-
-    %w{delimitable file generator music_selection parser playlist track}.each do |_file|
-      require("#{::File.dirname(__FILE__) + '/library'}/#{_file}.rb")
-    end
-    include MusicSelection
-    include Itunes::Library::Delimitable
-
     attr_reader :id
     attr_writer :playlists, :tracks
     attr_accessor :mode, :parser
 
     def initialize(id_string, options={})
       @id = id_string
-      @mode = options[:mode] || Parser::DEFAULT_MODE
-      @parser = options[:parser]
-      super
+      @mode = options.delete(:mode) || Parser::DEFAULT_MODE
+      @parser = options.delete(:parser)
+      super(options)
     end
   end # Library
 end

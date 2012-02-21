@@ -1,22 +1,20 @@
 module Itunes
   class Library::Playlist
-    def self._attr_names
-      ["Playlist ID", "Name", "Playlist Persistent ID", "Parent Persistent ID"]
-    end
+    class << self
+      def _attr_symbols
+        [:id, :name, :persistent_id, :parent_persistent_id]
+      end
+      alias :_attributes :_attr_symbols
 
-    def self._attr_symbols
-      [:id, :name, :persistent_id, :parent_persistent_id]
-    end
-
-    def self._attributes
-      _attr_symbols
+      def csv_header
+        super + Itunes::Library::DELIMITER + Track.csv_header
+      end
     end
     include Library::MusicSelection
 
     attr_reader :track_ids
     def initialize(options={})
       clear_track_cache
-      #@track_ids = options[Library::Playlist.track_ids_key] || []
       @track_ids = options[:track_ids_key] || []
       super
     end
@@ -30,13 +28,10 @@ module Itunes
     def clear_track_cache
       @tracks = nil
     end
+    private :clear_track_cache
 
     def tracks
       @tracks ||= Track.lookup_all(track_ids.uniq)
-    end
-
-    def self.csv_header
-      super + Itunes::Library::DELIMITER + Track.csv_header
     end
 
     def csv_rows
@@ -47,6 +42,7 @@ module Itunes
     end
     include Itunes::Library::Delimitable
 
+    # bgn - parse
     XPATH  = '/plist/dict/array/dict'
     # <key>Name</key><string>Library</string>
     # <key>Playlist ID</key><integer>13414</integer>
@@ -63,47 +59,54 @@ module Itunes
     #  </dict>
     # ....
     # </array>
-    def self.track_ids_key
-      'Playlist Items'
-    end
+    class << self
+      def _attr_names
+        ["Playlist ID", "Name", "Playlist Persistent ID", "Parent Persistent ID"]
+      end
 
-    def self.parse(itunes_library_parser)
-      itunes_library_parser.xml.xpath(XPATH).map do |playlist_entry|
-        key = nil
-        playlist_hash = {}
-        playlist_entry.children.each do |attribute|
-          if new_known_key?(attribute, [track_ids_key] + _attr_names)
-            key = attribute.text
-          elsif key
-            if key == track_ids_key
-              playlist_hash[track_ids_key] ||= []
-              playlist_hash[track_ids_key] |= extract_track_ids_from(attribute)
-              # not sure if we should clear key, at this point: key = nil
-            else
-              playlist_hash[key] = attribute.text
-              key = nil
+      def track_ids_key
+        'Playlist Items'
+      end
+
+      def parse(itunes_library_parser)
+        itunes_library_parser.xml.xpath(XPATH).map do |playlist_entry|
+          key = nil
+          playlist_hash = {}
+          playlist_entry.children.each do |attribute|
+            if new_known_key?(attribute, [track_ids_key] + _attr_names)
+              key = attribute.text
+            elsif key
+              if key == track_ids_key
+                playlist_hash[track_ids_key] ||= []
+                playlist_hash[track_ids_key] |= extract_track_ids_from(attribute)
+                # not sure if we should clear key, at this point, i.e. key = nil
+              else
+                playlist_hash[key] = attribute.text
+                key = nil
+              end
             end
           end
+          create extract_params(
+            playlist_hash, {
+            :for_keys => playlist_hash.keys,
+            :as => itunes_names_to_symbols.merge({Library::Playlist.track_ids_key => :track_ids_key})
+          })
         end
-        create extract_params(
-          playlist_hash, {
-          :for_keys => playlist_hash.keys,
-          :as => {Library::Playlist.track_ids_key => :track_ids_key}
-        })
       end
-    end # parse
 
-    def self.extract_track_ids_from(attribute)
-      track_id_key = nil
-      attribute.xpath(TRACK_ID_XPATH).children.reduce([]) do |memo, track_id_attribute|
-        if new_key?(track_id_attribute) && TRACK_ID_ATTR == track_id_attribute.text
-          track_id_key = true
-        elsif track_id_key
-          memo << track_id_attribute.text
-          track_id_key = nil
+      def extract_track_ids_from(attribute)
+        track_id_key = nil
+        attribute.xpath(TRACK_ID_XPATH).children.reduce([]) do |memo, track_id_attribute|
+          if new_key?(track_id_attribute) && TRACK_ID_ATTR == track_id_attribute.text
+            track_id_key = true
+          elsif track_id_key
+            memo << track_id_attribute.text
+            track_id_key = nil
+          end
+          memo
         end
-        memo
       end
     end
+    # end - parse
   end # Playlist
 end

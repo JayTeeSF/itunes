@@ -1,5 +1,10 @@
 Gem containing utilities for generating, parsing, and otherwise manipulating iTunes XML files.
 
+DEV:
+  test: find ./spec -name "*_spec.rb" | rspec
+  str_file = StringIO.new Itunes::Library::Generator.generate
+  Itunes::Library::Parser.parse_local(str_file, :reader => StringIO)
+
 TODO: port specs from original "rails" app
 fix dependencies:
   inject dependencies into code (i.e. for mocking in tests)

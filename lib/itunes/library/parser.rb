@@ -1,5 +1,15 @@
 # input_filename = Rails.root + 'features/iTunes Sample.xml'
 # Itunes::Library::Parser.parse_local(input_filename)
+#
+# require 'stringio'
+# f = StringIO.new(Itunes::Library::Generator.generate)
+# Itunes::Library::Parser.parse_local("/tmp/foo.xml", :file => f)
+#
+# lparser = Itunes::Library::Parser.local_parser("/tmp/foo.xml", :file => f)
+# library = lparser.to_csv
+# library = lparser.library
+# library.tracks
+# lparser.parse
 module Itunes
   class Library::Parser
 
@@ -21,20 +31,36 @@ module Itunes
       @skip_paperclip = options.has_key?(:skip_paperclip) ? options[:skip_paperclip] : !self.class.defined_constants?('Paperclip::Tempfile')
     end
 
-    def self.parse_local(input_filename, options={})
-      output_filename = (options[:out_doc] || tmp_dir(options) + '/parsed.csv').to_s
-      options[:out_doc] ||= output_filename
-      file_wrapper_class = options.delete(:file_wrapper_class) || Library::File
-      library_file_obj = file_wrapper_class.new(input_filename)
-      options[:skip_paperclip] = true unless options.has_key?(:skip_paperclip)
+    def self.local_parser(input_filename, options={})
+      parser_for(*local_params(input_filename, options))
+    end
 
-      parse library_file_obj, options
+    def self.parse_local(input_filename, options={})
+      file_obj, options = local_params(input_filename, options)
+      output_filename = options[:out_doc]
+      parse(file_obj, options)
       puts "open #{output_filename}"
     end
 
+    def self.local_params(input_filename, options={})
+      output_filename = (options[:out_doc] || tmp_dir(options) + '/parsed.csv').to_s
+      options[:out_doc] ||= output_filename
+      file_wrapper_args = [input_filename]
+      file_wrapper_class = options.delete(:file_wrapper_class) || Library::File
+      file_wrapper_args << {:file => options.delete(:file)} if options.has_key?(:file)
+      library_file_obj = file_wrapper_class.new(*file_wrapper_args)
+      options[:skip_paperclip] = true unless options.has_key?(:skip_paperclip)
+
+      [library_file_obj, options]
+    end
+
     def self.parse library_file_obj, options = {}
+      parser_for(library_file_obj, options).parse
+    end
+
+    def self.parser_for library_file_obj, options = {}
       return unless EXPECTED_CONTENT_TYPES.include?(options[:content_type] || library_file_obj.content_type)
-      new(library_file_obj, options).parse
+      new(library_file_obj, options)
     end
 
     def temp_file
