@@ -8,8 +8,15 @@ done:
      -  remove File dependency [good e' nuff]
   o  add factory generate method direct to "Library", i.e. Library.generate => Generator.generate
   o  extract Rake task(s) from original Rails app
+  o  Itunes XMLFile -> Library
+  o  library -> Itunes XMLFile (in-progress)
 
 todo:
+  o  generator -- support non-alphanum characters (i.e. '&', as in "Count Basie & His Orchestra")
+
+  o  support extra track attribute(s): location (update Generator, to use track.location, i.e. preview_url)
+  o  map jamble tracks/playlists to Itunes::Library:: Tracks & Playlists
+
   o  re-organize:
      library - playlist - track
      library-file::generator, ::parser, (::playlist, ::track)
@@ -17,7 +24,6 @@ todo:
   o  behavior specs (left todo):
      - library
      - playlist
-     - track
   ?  consider renaming to itunes_library (thus removing top-level anorexic "Itunes" module)
 
 

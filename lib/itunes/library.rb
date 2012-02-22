@@ -2,33 +2,41 @@ module Itunes
   class Library
     class Invalid < Exception; end
 
+    def self.found_key_node?(node, name_match=KEY, text_match=id_key)
+      node.name == name_match && node.text == text_match
+    end
+
+    def self.next_node_in(node_list, pattern_detector=:found_key_node?)
+      key = false
+      node_list.detect do |node|
+        key ? key : ((key = send(pattern_detector, node)) && false)
+      end
+    end
+
     XPATH  = '/plist/dict'
     def self.parse(itunes_library_parser)
-      key = nil
-      id_attr = itunes_library_parser.xml.xpath(XPATH).children.detect do |attribute|
-        if attribute.name == KEY && attribute.text == id_key
-          key = id_key
-          false
-        elsif key
-          key = nil
-          true
-        end
-      end
-      create(id_attr.text, :mode => itunes_library_parser.mode, :parser => itunes_library_parser)
+      id_val = next_node_in(itunes_library_parser.xml.xpath(XPATH).children)
+      create(id_val.text, :mode => itunes_library_parser.mode, :parser => itunes_library_parser)
     end
 
     def self.id_key
       'Library Persistent ID'
     end
 
-    # TODO: (re-)move this method
-    # Library::File.generate, maybe...
-    def self.generate(options={})
-      Generator.generate(options)
+    def generate(options={})
+      Generator.generate(options.merge({:library => self}))
+    end
+
+    def playlist_ids
+      playlists.map(&:id)
     end
 
     def playlists
       @playlists ||= Playlist.parse(parser)
+    end
+
+    def track_ids
+      tracks.map(&:id)
     end
 
     def tracks

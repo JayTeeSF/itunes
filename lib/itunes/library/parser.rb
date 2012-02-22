@@ -6,6 +6,8 @@
 # Itunes::Library::Parser.parse_local("/tmp/foo.xml", :file => f)
 #
 # lparser = Itunes::Library::Parser.local_parser("/tmp/foo.xml", :file => f)
+# parsed_tracks = Itunes::Library::Track.parse(lparser)
+# issue: caching -- stringio, needs to be rewound (or cached)
 # library = lparser.to_csv
 # library = lparser.library
 # library.tracks
@@ -38,8 +40,9 @@ module Itunes
     def self.parse_local(input_filename, options={})
       file_obj, options = local_params(input_filename, options)
       output_filename = options[:out_doc]
-      parse(file_obj, options)
-      puts "open #{output_filename}"
+      parse(file_obj, options).tap do |_parsed_file|
+        puts "open #{output_filename}"
+      end
     end
 
     def self.local_params(input_filename, options={})

@@ -14,24 +14,38 @@ module Itunes
     extend self
 
     def generate(options={})
-      num_tracks = options[:num_tracks] || 1
-      num_playlists = options[:num_playlists] || 1
+      library = options[:library]
+      num_tracks = library ? library.tracks.count : options[:num_tracks] || 1
+      num_playlists = library ? library.playlists.count : options[:num_playlists] || 1
       tracks_per_playlist = options[:tracks_per_playlist] || 1
 
-      track_ids = (1..num_tracks).to_a
-      playlist_ids = (1..num_playlists).to_a
+      track_ids = library ? library.track_ids : (1..num_tracks).to_a
+      playlist_ids =  library ? library.playlist_ids : (1..num_playlists).to_a
 
       username = options[:username] || default_username
       users_music_dir = options[:music_dir] || music_dir(username)
       result = header(html_safe(users_music_dir))
       result << tracks_wrapper_header
-      track_ids.each {|i| result << track(i, "track_#{i}", :music_dir => users_music_dir)}
+      if library
+        track_ids.each do |i|
+          the_track = Library::Track.lookup(i.to_s)
+          result << track(i, the_track.title, :music_dir => users_music_dir, :release_name => the_track.album, :artist_name => the_track.artist, :genre => the_track.genre)
+        end
+      else
+        track_ids.each {|i| result << track(i, "track_#{i}", :music_dir => users_music_dir)}
+      end
       result << tracks_wrapper_footer
 
       result << playlists_wrapper_header
       playlist_ids.each do |i|
-        result << playlist_tracks_wrapper_header(i, "playlist_#{i}")
-        tracks_per_playlist.times { result << playlist_track(track_ids[rand(num_tracks)]) }
+        if library
+          playlist = Library::Playlist.lookup(i.to_s)
+          result << playlist_tracks_wrapper_header(i, playlist.title, :persistent_id => playlist.persistent_id)
+          playlist.track_ids.each {|ti| result << playlist_track(ti) }
+        else
+          result << playlist_tracks_wrapper_header(i, "playlist_#{i}")
+          tracks_per_playlist.times { result << playlist_track(track_ids[rand(num_tracks)]) }
+        end
         result << playlist_tracks_wrapper_footer
       end
       result << playlists_wrapper_footer
@@ -88,7 +102,7 @@ module Itunes
     end
 
     def default_artist_name
-      'Count Basie & His Orchestra'
+      'Count Basie and His Orchestra'
     end
 
     def track(track_id, name, options={})

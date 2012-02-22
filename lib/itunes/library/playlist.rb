@@ -2,7 +2,7 @@ module Itunes
   class Library::Playlist
     class << self
       def _attr_symbols
-        [:id, :name, :persistent_id, :parent_persistent_id]
+        [:id, :title, :persistent_id, :parent_persistent_id]
       end
       alias :_attributes :_attr_symbols
 
@@ -11,6 +11,8 @@ module Itunes
       end
     end
     include Library::MusicSelection
+    alias :name :title
+    alias :name= :title=
 
     attr_reader :track_ids
     def initialize(options={})
@@ -19,9 +21,13 @@ module Itunes
       super
     end
 
-    def <<(track_id)
-      clear_track_cache
-      @track_ids << track_id
+    def <<(track_or_track_id)
+      if track_or_track_id.is_a?(Track)
+        @tracks << track_or_track_id
+      else
+        clear_track_cache
+        @track_ids << track_or_track_id
+      end
     end
     alias :push :<<
 

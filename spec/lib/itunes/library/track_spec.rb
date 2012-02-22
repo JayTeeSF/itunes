@@ -11,6 +11,7 @@ describe Itunes::Library::Track do
       let(:attrs) { params }
       let(:track) { Itunes::Library::Track.new(attrs) }
       let(:extras) { {:foo => :bar} }
+
       it "should instantiate" do
         expect { Itunes::Library::Track.new(params) }.not_to raise_error
       end
@@ -50,8 +51,22 @@ describe Itunes::Library::Track do
           end
         end
       end
+
+      #FIXME: extract iTunes specifics from the notion of a (general) Track model
       context "from an iTunes file" do
-        let(:track_hash) { Itunes::Library::Generator.generate }
+        let(:itunes_data) { Itunes::Library::Generator.generate }
+        let(:xml_parser) do
+          require 'nokogiri'
+          mock().tap do |m|
+            m.should_receive(:xml).and_return(Nokogiri::XML(itunes_data))
+          end
+        end
+        it "should return the generated track" do
+          parsed_tracks = Itunes::Library::Track.parse(xml_parser)
+          parsed_tracks.size.should == 1
+          parsed_tracks.first.id.should == "1"
+          parsed_tracks.first.name.should == "track_1"
+        end
       end
     end
   end

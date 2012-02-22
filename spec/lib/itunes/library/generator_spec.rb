@@ -3,11 +3,18 @@ require 'stringio'
 
 describe Itunes::Library::Generator do
   context "without arguments" do
+    let(:single_track_in_single_playlist_file) {
+      "#{File.dirname(__FILE__)}/../../../fixtures/single_track_in_single_playlist.xml"
+    }
     let(:single_track_in_single_playlist) {
-      File.read( "#{File.dirname(__FILE__)}/../../../fixtures/single_track_in_single_playlist.xml" )
+      File.read( single_track_in_single_playlist_file )
     }
     it "should return a single track in a single playlist" do
       Itunes::Library::Generator.generate.should == single_track_in_single_playlist
+    end
+    it "should be idempotent" do
+      lparser = Itunes::Library::Parser.local_parser(single_track_in_single_playlist_file)
+      Itunes::Library::Generator.generate.should == lparser.library.generate
     end
   end
 
