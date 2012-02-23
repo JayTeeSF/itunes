@@ -2,20 +2,11 @@ module Itunes
   class Library
     class Invalid < Exception; end
 
-    def self.found_key_node?(node, name_match=KEY, text_match=id_key)
-      node.name == name_match && node.text == text_match
+    def self.xpath
+      '/plist/dict'
     end
-
-    def self.next_node_in(node_list, pattern_detector=:found_key_node?)
-      key = false
-      node_list.detect do |node|
-        key ? key : ((key = send(pattern_detector, node)) && false)
-      end
-    end
-
-    XPATH  = '/plist/dict'
     def self.parse(itunes_library_parser)
-      id_val = next_node_in(itunes_library_parser.xml.xpath(XPATH).children)
+      id_val = next_node_in(itunes_library_parser.xml.xpath(xpath).children, [id_key])
       create(id_val.text, :mode => itunes_library_parser.mode, :parser => itunes_library_parser)
     end
 
@@ -55,11 +46,12 @@ module Itunes
      []
     end
 
-    %w{delimitable file generator music_selection parser playlist track}.each do |_file|
+    %w{parseable delimitable file generator music_selection parser playlist track}.each do |_file|
       require("#{::File.dirname(__FILE__) + '/library'}/#{_file}.rb")
     end
     include MusicSelection
     include Itunes::Library::Delimitable
+    include Itunes::Library::Parseable
 
     def csv_header
       ignore_playlists? ?  Track.csv_header : Playlist.csv_header

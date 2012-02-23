@@ -1,7 +1,6 @@
 require 'object_cache'
 module Itunes
   module Library::MusicSelection
-    KEY = 'key' # parse
     module ClassMethods
       def attr_map
         identity_map(_attributes)
@@ -26,29 +25,14 @@ module Itunes
           obj.save
         end
       end
-
-      # bgn - parse
-      def itunes_names_to_symbols
-        Hash[_attr_names.zip(_attr_symbols)]
-      end
-
-      def new_known_key? attribute, attribute_list=_attr_names
-        new_key?(attribute) && known_attribute?(attribute, attribute_list)
-      end
-
-      def new_key? attribute
-        KEY == attribute.name
-      end
-
-      def known_attribute? attribute, attribute_list=_attr_names
-        attribute_list.include?(attribute.text)
-      end
-      # end - parse
     end
 
     def self.included(base)
       base.class_eval do
         include ObjectCache
+        # add new 'object_cache method':
+        #   cache :in => [:memory, :db]
+        # for example, for fast in-memory caching w/ subsequent backup to db
         extend ClassMethods
         attr_accessor *(base._attributes)
       end
@@ -61,27 +45,28 @@ module Itunes
       raise Library::Invalid, "missing ID" unless id
     end
 
-    def save_in_memory
-      warn "saving in memory"
-      self.class.cache[id] = self
-    end
-
     # TODO: update cache_object gem
     # enable it to call active_record or mongo
     # or some file-writer
-    def save(location=:in_memory)
-      method_name = "save_#{location}"
-      send(method_name)
+    def save_in_memory(_id, _obj)
+      #warn "saving in memory"
+      self.class.cache[_id] = _obj
     end
 
-    def save_to_file
+    # replace location w/ an instance var (see new 'object_cache method' above)
+    def save(_id=id, _obj=self, location=:in_memory)
+      method_name = "save_#{location}"
+      send(method_name, _id, _obj)
+    end
+
+    def save_to_file(_id, _obj)
       unless output_file || File.exists(output_file)
         raise RuntimeError, "Unable to save_to_file: Output File not specified or invalid"
       end
       raise NotImplementedError, "Unable to save_to_file"
     end
 
-    def save_to_db
+    def save_to_db(_id, _obj)
       unless db_obj || db_obj.respond_to?(:save)
         raise RuntimeError, "Unable to save_to_db: db_obj not specified or invalid"
       end
