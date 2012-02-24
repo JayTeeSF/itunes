@@ -14,7 +14,6 @@
 # lparser.parse
 module Itunes
   class Library::Parser
-
     DEFAULT_MODE = :tracks_only
     OUTPUT_FORMAT = "csv"
     EXPECTED_CONTENT_TYPES = ["application/xml", "text/xml"]
@@ -33,37 +32,82 @@ module Itunes
       @skip_paperclip = options.has_key?(:skip_paperclip) ? options[:skip_paperclip] : !self.class.defined_constants?('Paperclip::Tempfile')
     end
 
-    def self.local_parser(input_filename, options={})
-      parser_for(*local_params(input_filename, options))
-    end
-
-    def self.parse_local(input_filename, options={})
-      file_obj, options = local_params(input_filename, options)
-      output_filename = options[:out_doc]
-      parse(file_obj, options).tap do |_parsed_file|
-        puts "open #{output_filename}"
+    class << self
+      def local_parser(input_filename, options={})
+        parser_for(*local_params(input_filename, options))
       end
-    end
 
-    def self.local_params(input_filename, options={})
-      output_filename = (options[:out_doc] || tmp_dir(options) + '/parsed.csv').to_s
-      options[:out_doc] ||= output_filename
-      file_wrapper_args = [input_filename]
-      file_wrapper_class = options.delete(:file_wrapper_class) || Library::File
-      file_wrapper_args << {:file => options.delete(:file)} if options.has_key?(:file)
-      library_file_obj = file_wrapper_class.new(*file_wrapper_args)
-      options[:skip_paperclip] = true unless options.has_key?(:skip_paperclip)
+      def parse_local(input_filename, options={})
+        file_obj, options = local_params(input_filename, options)
+        output_filename = options[:out_doc]
+        parse(file_obj, options).tap do |_parsed_file|
+          puts "open #{output_filename}"
+        end
+      end
 
-      [library_file_obj, options]
-    end
+      def local_params(input_filename, options={})
+        output_filename = (options[:out_doc] || tmp_dir(options) + '/parsed.csv').to_s
+        options[:out_doc] ||= output_filename
+        file_wrapper_args = [input_filename]
+        file_wrapper_class = options.delete(:file_wrapper_class) || Itunes::Library::File
+        file_wrapper_args << {:file => options.delete(:file)} if options.has_key?(:file)
+        library_file_obj = file_wrapper_class.new(*file_wrapper_args)
+        options[:skip_paperclip] = true unless options.has_key?(:skip_paperclip)
 
-    def self.parse library_file_obj, options = {}
-      parser_for(library_file_obj, options).parse
-    end
+        [library_file_obj, options]
+      end
 
-    def self.parser_for library_file_obj, options = {}
-      return unless EXPECTED_CONTENT_TYPES.include?(options[:content_type] || library_file_obj.content_type)
-      new(library_file_obj, options)
+      def parse library_file_obj, options = {}
+        parser_for(library_file_obj, options).parse
+      end
+
+      def parser_for library_file_obj, options = {}
+        return unless EXPECTED_CONTENT_TYPES.include?(options[:content_type] || library_file_obj.content_type)
+        new(library_file_obj, options)
+      end
+
+      def tmp_dir(options={})
+        (options[:tmp_dir] || root_dir(options) + '/tmp').tap do |tmp_dir|
+          verify_or_mkdir(tmp_dir)
+        end
+      end
+
+      def verify_or_mkdir(dir)
+        File.exists?(dir) || FileUtils.mkdir_p(dir)
+      end
+
+      def root_dir(options={})
+        options[:root_dir] || defined_constants?('Rails') ? Rails.root.to_s : '.'
+      end
+
+
+      # Itunes::Library::Parser.defined_constants?('Object')
+      # => true
+      # Itunes::Library::Parser.defined_constants?('Object::Itunes')
+      # => true
+      # Itunes::Library::Parser.defined_constants?('Foo::Bar')
+      # => false
+      # Itunes::Library::Parser.defined_constants?('Object::Foo::Bar::Baz')
+      # [ previously: BOOM! ]
+      # => false
+      def defined_constants?(constant_string)
+        constant_string = constant_string.dup
+        separator = '::'
+        current_constant = nil
+        bogus_starting_pattern = "Object#{separator}"
+        while constant_string.start_with?(bogus_starting_pattern)
+          constant_string.sub!(bogus_starting_pattern, '')
+        end
+
+        constant_string.split(separator).all? do |constant_segment|
+          if current_constant
+            current_constant << "#{separator}#{constant_segment}"
+          else
+            current_constant = constant_segment
+          end
+          Object.const_defined?(current_constant)
+        end
+      end
     end
 
     def temp_file
@@ -79,7 +123,10 @@ module Itunes
     end
 
     def library
-      @library ||= Library.parse(self)
+      # l = Library.new
+      # l.extend(Parser::Library)
+      # l.parse(self)
+      @library ||= Itunes::Library.parse(self)
     end
 
     def output_dir
@@ -117,47 +164,8 @@ module Itunes
       @skip_paperclip
     end
 
-    def self.tmp_dir(options={})
-      (options[:tmp_dir] || root_dir(options) + '/tmp').tap do |tmp_dir|
-        verify_or_mkdir(tmp_dir)
-      end
-    end
-
-    def self.verify_or_mkdir(dir)
-      File.exists?(dir) || FileUtils.mkdir_p(dir)
-    end
-
-    def self.root_dir(options={})
-      options[:root_dir] || defined_constants?('Rails') ? Rails.root.to_s : '.'
-    end
-
-
-    # Itunes::Library::Parser.defined_constants?('Object')
-    # => true
-    # Itunes::Library::Parser.defined_constants?('Object::Itunes')
-    # => true
-    # Itunes::Library::Parser.defined_constants?('Foo::Bar')
-    # => false
-    # Itunes::Library::Parser.defined_constants?('Object::Foo::Bar::Baz')
-    # [ previously: BOOM! ]
-    # => false
-    def self.defined_constants?(constant_string)
-      constant_string = constant_string.dup
-      separator = '::'
-      current_constant = nil
-      bogus_starting_pattern = "Object#{separator}"
-      while constant_string.start_with?(bogus_starting_pattern)
-        constant_string.sub!(bogus_starting_pattern, '')
-      end
-
-      constant_string.split(separator).all? do |constant_segment|
-        if current_constant
-          current_constant << "#{separator}#{constant_segment}"
-        else
-          current_constant = constant_segment
-        end
-        Object.const_defined?(current_constant)
-      end
-    end
   end # Parser
+  %w{library playlist track}.each do |_file|
+    require("#{::File.dirname(__FILE__) + '/parser'}/#{_file}.rb")
+  end
 end

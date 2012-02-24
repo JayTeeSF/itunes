@@ -1,4 +1,5 @@
 module Itunes
+  require 'class_helpers'
   require 'itunes/railtie' if defined?(Rails)
 end
 

@@ -2,18 +2,6 @@ module Itunes
   class Library
     class Invalid < Exception; end
 
-    def self.xpath
-      '/plist/dict'
-    end
-    def self.parse(itunes_library_parser)
-      id_val = next_node_in(itunes_library_parser.xml.xpath(xpath).children, [id_key])
-      create(id_val.text, :mode => itunes_library_parser.mode, :parser => itunes_library_parser)
-    end
-
-    def self.id_key
-      'Library Persistent ID'
-    end
-
     def generate(options={})
       Generator.generate(options.merge({:library => self}))
     end
@@ -22,16 +10,8 @@ module Itunes
       playlists.map(&:id)
     end
 
-    def playlists
-      @playlists ||= Playlist.parse(parser)
-    end
-
     def track_ids
       tracks.map(&:id)
-    end
-
-    def tracks
-      @tracks ||= Track.parse(parser)
     end
 
     # NOTE - Parsing (314) playlists added 195 seconds to an otherwise sub-second library-parse (of 5517-track)
@@ -51,7 +31,8 @@ module Itunes
     end
     include MusicSelection
     include Itunes::Library::Delimitable
-    include Itunes::Library::Parseable
+    include ClassHelpers
+    include Itunes::Library::Parser::Library
 
     def csv_header
       ignore_playlists? ?  Track.csv_header : Playlist.csv_header
@@ -68,13 +49,13 @@ module Itunes
     end
 
     attr_reader :id
+    attr_accessor :mode
     attr_writer :playlists, :tracks
-    attr_accessor :mode, :parser
+    attr_super_reader :playlists, :tracks
 
     def initialize(id_string, options={})
       @id = id_string
       @mode = options.delete(:mode) || Parser::DEFAULT_MODE
-      @parser = options.delete(:parser)
       super(options)
     end
   end # Library

@@ -1,3 +1,18 @@
+todo:
+  o  support extra track attribute(s) e.g. preview_url, artist_image_url, etc*
+     *  update Generator, to use track.location ...aka: preview_url
+  o  map jamble tracks/playlists to Itunes::Library:: Tracks & Playlists
+
+  o  extract ClassHelpers to a separate gem
+  o  extract object_cache#save methods to object_cache gem
+
+  o  generator -- support non-alphanum characters (i.e. '&', as in "Count Basie & His Orchestra")
+
+  o  behavior specs (left todo):
+     - library
+  ?  consider renaming to itunes_library (thus removing top-level anorexic "Itunes" namespace-module)
+
+
 done:
   removed Rails dependency
   add dependencies to gemspec (Nokogiri)
@@ -10,20 +25,7 @@ done:
   o  extract Rake task(s) from original Rails app
   o  Itunes XMLFile -> Library
   o  library -> Itunes XMLFile (in-progress)
-
-todo:
-  o  generator -- support non-alphanum characters (i.e. '&', as in "Count Basie & His Orchestra")
-
-  o  support extra track attribute(s): location (update Generator, to use track.location, i.e. preview_url)
-  o  map jamble tracks/playlists to Itunes::Library:: Tracks & Playlists
-
+  o  extract parser from library, playlist & track
   o  re-organize:
      library - playlist - track
      library-file::generator, ::parser, (::playlist, ::track)
-
-  o  behavior specs (left todo):
-     - library
-     - playlist
-  ?  consider renaming to itunes_library (thus removing top-level anorexic "Itunes" module)
-
-
