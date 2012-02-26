@@ -28,7 +28,8 @@ module Itunes
       result << tracks_wrapper_header
       if library
         track_ids.each do |i|
-          the_track = Library::Track.lookup(i.to_s)
+          #the_track = Library::Track.lookup(i.to_s)
+          the_track = library.tracks.detect{|t| t.id == i.to_s}
           result << track(i, the_track.title, :music_dir => users_music_dir, :release_name => the_track.album, :artist_name => the_track.artist, :genre => the_track.genre)
         end
       else
@@ -39,7 +40,8 @@ module Itunes
       result << playlists_wrapper_header
       playlist_ids.each do |i|
         if library
-          playlist = Library::Playlist.lookup(i.to_s)
+          #playlist = Library::Playlist.lookup(i.to_s)
+          playlist = library.playlists.detect{|p| p.id == i.to_s}
           result << playlist_tracks_wrapper_header(i, playlist.title, :persistent_id => playlist.persistent_id)
           playlist.track_ids.each {|ti| result << playlist_track(ti) }
         else
