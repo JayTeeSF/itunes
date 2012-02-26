@@ -22,20 +22,14 @@ module Itunes
       end
 
       def playlists
-        #l.playlists = Playlist.parse(parser)
         @playlists ||= ::Itunes::Library::Playlist.parse(parser)
       end
 
       def tracks
-        #l.tracks = Track.parse(parser)
         @tracks ||= ::Itunes::Library::Track.parse(parser)
       end
 
-      # include ClassHelpers
-      # attr_super_reader :playlists, :tracks
-
       def initialize(options={})
-        #@mode = options.delete(:mode) || Parser::DEFAULT_MODE
         @parser = options.delete(:parser)
         super(options)
       end

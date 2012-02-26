@@ -30,9 +30,7 @@ module Itunes
     def self.included(base)
       base.class_eval do
         include ObjectCache
-        # add new 'object_cache method':
-        #   cache :in => [:memory, :db]
-        # for example, for fast in-memory caching w/ subsequent backup to db
+        cache :in => :memory # DEFAULT
         extend ClassMethods
         attr_accessor *(base._attributes)
       end
@@ -43,34 +41,6 @@ module Itunes
         send("#{method}=", options[attr]) if options[attr]
       end
       raise Library::Invalid, "missing ID" unless id
-    end
-
-    # TODO: update cache_object gem
-    # enable it to call active_record or mongo
-    # or some file-writer
-    def save_in_memory(_id, _obj)
-      #warn "saving in memory"
-      self.class.cache[_id] = _obj
-    end
-
-    # replace location w/ an instance var (see new 'object_cache method' above)
-    def save(_id=id, _obj=self, location=:in_memory)
-      method_name = "save_#{location}"
-      send(method_name, _id, _obj)
-    end
-
-    def save_to_file(_id, _obj)
-      unless output_file || File.exists(output_file)
-        raise RuntimeError, "Unable to save_to_file: Output File not specified or invalid"
-      end
-      raise NotImplementedError, "Unable to save_to_file"
-    end
-
-    def save_to_db(_id, _obj)
-      unless db_obj || db_obj.respond_to?(:save)
-        raise RuntimeError, "Unable to save_to_db: db_obj not specified or invalid"
-      end
-      raise NotImplementedError, "Unable to save_to_db"
     end
   end # MusicSelection
 end

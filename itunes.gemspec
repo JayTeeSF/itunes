@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.name          = "itunes"
   gem.require_paths = ["lib"]
   gem.version       = Itunes::VERSION
-  gem.add_dependency('object_cache', '>=0.0.3')
+  gem.add_dependency('object_cache', '>=0.0.4')
   gem.add_dependency('nokogiri', '~>1.5.0')
   gem.add_development_dependency 'rspec'
 end
