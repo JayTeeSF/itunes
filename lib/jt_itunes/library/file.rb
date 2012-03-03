@@ -2,7 +2,7 @@
 # input_filename = "/pretend_dir/foo.txt"
 # input_file = StringIO.new "contents of '/pretend_dir/foo.txt'"
 # lf = Library::File.new(input_filename, :file => input_file)
-module Itunes
+module JtItunes
   extend self
   class Library::File
     DEFAULT_CONTENT_TYPE = "application/xml"

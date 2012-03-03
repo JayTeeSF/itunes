@@ -1,8 +1,8 @@
-module Itunes
+module JtItunes
   class Library
     module Parser::Playlist
       def self.included(base)
-        base.send(:include, Itunes::Library::Parseable)
+        base.send(:include, JtItunes::Library::Parseable)
         base.extend ClassMethods
       end
 
@@ -13,7 +13,7 @@ module Itunes
         alias :_attributes :_attr_symbols
 
         def csv_header
-          super + Itunes::Library::DELIMITER + Itunes::Library::Track.csv_header
+          super + JtItunes::Library::DELIMITER + JtItunes::Library::Track.csv_header
         end
 
         def xpath
@@ -29,7 +29,7 @@ module Itunes
         end
 
         def symbol_overrides
-          {Itunes::Library::Playlist.track_ids_key => :track_ids_key }
+          {JtItunes::Library::Playlist.track_ids_key => :track_ids_key }
         end
 
         def _attr_names

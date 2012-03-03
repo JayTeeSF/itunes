@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/itunes/version', __FILE__)
+require File.expand_path('../lib/jt_itunes/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Jason Hoth Jr"]
@@ -11,9 +11,9 @@ Gem::Specification.new do |gem|
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  gem.name          = "itunes"
+  gem.name          = "jt_itunes"
   gem.require_paths = ["lib"]
-  gem.version       = Itunes::VERSION
+  gem.version       = JtItunes::VERSION
   gem.add_dependency('object_cache', '>=0.0.4')
   gem.add_dependency('nokogiri', '~>1.5.0')
   gem.add_development_dependency 'rspec'

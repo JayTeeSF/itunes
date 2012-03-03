@@ -1,4 +1,4 @@
-module Itunes
+module JtItunes
   class Library::Playlist
     include Library::Parser::Playlist
     include Library::MusicSelection
@@ -37,9 +37,9 @@ module Itunes
     def csv_rows
       return "" unless tracks.present?
       tracks.collect do |t|
-        csv_row.join(Itunes::Library::DELIMITER) + Itunes::Library::DELIMITER + t.csv_row
+        csv_row.join(JtItunes::Library::DELIMITER) + JtItunes::Library::DELIMITER + t.csv_row
       end.join("\n")
     end
-    include Itunes::Library::Delimitable
+    include JtItunes::Library::Delimitable
   end # Playlist
 end

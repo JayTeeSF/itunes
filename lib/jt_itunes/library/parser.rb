@@ -1,18 +1,18 @@
 # input_filename = Rails.root + 'features/iTunes Sample.xml'
-# Itunes::Library::Parser.parse_local(input_filename)
+# JtItunes::Library::Parser.parse_local(input_filename)
 #
 # require 'stringio'
-# f = StringIO.new(Itunes::Library::Generator.generate)
-# Itunes::Library::Parser.parse_local("/tmp/foo.xml", :file => f)
+# f = StringIO.new(JtItunes::Library::Generator.generate)
+# JtItunes::Library::Parser.parse_local("/tmp/foo.xml", :file => f)
 #
-# lparser = Itunes::Library::Parser.local_parser("/tmp/foo.xml", :file => f)
-# parsed_tracks = Itunes::Library::Track.parse(lparser)
+# lparser = JtItunes::Library::Parser.local_parser("/tmp/foo.xml", :file => f)
+# parsed_tracks = JtItunes::Library::Track.parse(lparser)
 # issue: caching -- stringio, needs to be rewound (or cached)
 # library = lparser.to_csv
 # library = lparser.library
 # library.tracks
 # lparser.parse
-module Itunes
+module JtItunes
   class Library::Parser
     DEFAULT_MODE = :tracks_only
     OUTPUT_FORMAT = "csv"
@@ -49,7 +49,7 @@ module Itunes
         output_filename = (options[:out_doc] || tmp_dir(options) + '/parsed.csv').to_s
         options[:out_doc] ||= output_filename
         file_wrapper_args = [input_filename]
-        file_wrapper_class = options.delete(:file_wrapper_class) || Itunes::Library::File
+        file_wrapper_class = options.delete(:file_wrapper_class) || JtItunes::Library::File
         file_wrapper_args << {:file => options.delete(:file)} if options.has_key?(:file)
         library_file_obj = file_wrapper_class.new(*file_wrapper_args)
         options[:skip_paperclip] = true unless options.has_key?(:skip_paperclip)
@@ -81,13 +81,13 @@ module Itunes
       end
 
 
-      # Itunes::Library::Parser.defined_constants?('Object')
+      # JtItunes::Library::Parser.defined_constants?('Object')
       # => true
-      # Itunes::Library::Parser.defined_constants?('Object::Itunes')
+      # JtItunes::Library::Parser.defined_constants?('Object::JtItunes')
       # => true
-      # Itunes::Library::Parser.defined_constants?('Foo::Bar')
+      # JtItunes::Library::Parser.defined_constants?('Foo::Bar')
       # => false
-      # Itunes::Library::Parser.defined_constants?('Object::Foo::Bar::Baz')
+      # JtItunes::Library::Parser.defined_constants?('Object::Foo::Bar::Baz')
       # [ previously: BOOM! ]
       # => false
       def defined_constants?(constant_string)
@@ -126,7 +126,7 @@ module Itunes
       # l = Library.new
       # l.extend(Parser::Library)
       # l.parse(self)
-      @library ||= Itunes::Library.parse(self)
+      @library ||= JtItunes::Library.parse(self)
     end
 
     def output_dir

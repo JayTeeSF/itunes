@@ -1,5 +1,5 @@
 require 'object_cache'
-module Itunes
+module JtItunes
   module Library::MusicSelection
     module ClassMethods
       def attr_map

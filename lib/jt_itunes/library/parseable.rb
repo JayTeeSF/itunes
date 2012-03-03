@@ -1,4 +1,4 @@
-module Itunes
+module JtItunes
   module Library::Parseable
     KEY = 'key' # parse
     module ClassMethods

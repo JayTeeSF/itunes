@@ -1,30 +1,30 @@
-require "#{File.dirname(__FILE__)}/../../../../lib/itunes/library.rb"
+require "#{File.dirname(__FILE__)}/../../../../lib/jt_itunes/library.rb"
 require 'stringio'
 
-describe Itunes::Library::File do
+describe JtItunes::Library::File do
   let(:file_path) { "/tmp/foo" }
   context "without arguments" do
     it "should raise an exception" do
-      lambda { Itunes::Library::File.new }.should raise_error(ArgumentError)
+      lambda { JtItunes::Library::File.new }.should raise_error(ArgumentError)
     end
   end
 
   context "with an invalid argument" do
     it "should raise an exception" do
-      lambda { Itunes::Library::File.new(nil) }.should raise_error(Itunes::Library::Invalid)
+      lambda { JtItunes::Library::File.new(nil) }.should raise_error(JtItunes::Library::Invalid)
     end
   end
 
   context "with a valid argument" do
     context "without a mock file" do
-      let(:lib_file) { Itunes::Library::File.new(file_path) }
+      let(:lib_file) { JtItunes::Library::File.new(file_path) }
       it "should return its name" do
         File.should_receive(:basename).with(file_path)
         lib_file.file_name
       end
 
       it "should return the default content_type" do
-        lib_file.content_type.should == Itunes::Library::File::DEFAULT_CONTENT_TYPE
+        lib_file.content_type.should == JtItunes::Library::File::DEFAULT_CONTENT_TYPE
       end
 
       it "should return its path" do
@@ -41,7 +41,7 @@ describe Itunes::Library::File do
 
     context "with mock file" do
       let(:str_file) { StringIO.new("file contents begin\r\nfile contents end") }
-      let(:lib_file) { Itunes::Library::File.new(file_path, :file => str_file) }
+      let(:lib_file) { JtItunes::Library::File.new(file_path, :file => str_file) }
       it "should return its name" do
         lib_file.file_name.should == File.basename(file_path)
       end
@@ -51,7 +51,7 @@ describe Itunes::Library::File do
         lib_file.read.should == expected
       end
       it "should return the default content type" do
-        lib_file.content_type.should == Itunes::Library::File::DEFAULT_CONTENT_TYPE
+        lib_file.content_type.should == JtItunes::Library::File::DEFAULT_CONTENT_TYPE
       end
       it "should return its path" do
         lib_file.path.should == file_path

@@ -1,8 +1,8 @@
-module Itunes
+module JtItunes
   class Library
     module Parser::Library
       def self.included(base)
-        base.send(:include, Itunes::Library::Parseable)
+        base.send(:include, JtItunes::Library::Parseable)
         base.extend ClassMethods
         base.send(:attr_accessor, :parser)
       end
@@ -22,11 +22,11 @@ module Itunes
       end
 
       def playlists
-        @playlists ||= ::Itunes::Library::Playlist.parse(parser)
+        @playlists ||= ::JtItunes::Library::Playlist.parse(parser)
       end
 
       def tracks
-        @tracks ||= ::Itunes::Library::Track.parse(parser)
+        @tracks ||= ::JtItunes::Library::Track.parse(parser)
       end
 
       def initialize(options={})

@@ -1,9 +1,9 @@
-module Itunes
+module JtItunes
   class Library::Track
-    include Itunes::Library::Parser::Track
+    include JtItunes::Library::Parser::Track
     include Library::MusicSelection
     alias :name :title
     alias :name= :title=
-    include Itunes::Library::Delimitable
+    include JtItunes::Library::Delimitable
   end # Track
 end

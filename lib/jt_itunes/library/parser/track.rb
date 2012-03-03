@@ -1,8 +1,8 @@
-module Itunes
+module JtItunes
   class Library
     module Parser::Track
       def self.included(base)
-        base.send(:include, Itunes::Library::Parseable)
+        base.send(:include, JtItunes::Library::Parseable)
         base.extend ClassMethods
       end
 

@@ -1,10 +1,10 @@
-require "#{File.dirname(__FILE__)}/../../lib/itunes.rb"
+require "#{File.dirname(__FILE__)}/../../lib/jt_itunes.rb"
 
-describe Itunes do
+describe JtItunes do
   context "mixed-into some class" do
     let(:some_klass) {
       it = Class.new
-      it.tap { |some_klass| some_klass.send(:include, Itunes) }
+      it.tap { |some_klass| some_klass.send(:include, JtItunes) }
     }
 
     it "should instantiate" do

@@ -1,19 +1,19 @@
-require "#{File.dirname(__FILE__)}/../../../../lib/itunes/library.rb"
+require "#{File.dirname(__FILE__)}/../../../../lib/jt_itunes/library.rb"
 
-describe Itunes::Library::Track do
-  context "with an '#{Itunes::Library::Track._attributes.first}' argument" do
+describe JtItunes::Library::Track do
+  context "with an '#{JtItunes::Library::Track._attributes.first}' argument" do
     it "should instantiate" do
-      expect { Itunes::Library::Track.new(Itunes::Library::Track._attributes.first => 101) }.not_to raise_error
+      expect { JtItunes::Library::Track.new(JtItunes::Library::Track._attributes.first => 101) }.not_to raise_error
     end
 
     context "with all known attributes" do
-      let(:params) { Itunes::Library::Track.attr_map}
+      let(:params) { JtItunes::Library::Track.attr_map}
       let(:attrs) { params }
-      let(:track) { Itunes::Library::Track.new(attrs) }
+      let(:track) { JtItunes::Library::Track.new(attrs) }
       let(:extras) { {:foo => :bar} }
 
       it "should instantiate" do
-        expect { Itunes::Library::Track.new(params) }.not_to raise_error
+        expect { JtItunes::Library::Track.new(params) }.not_to raise_error
       end
 
       it "should respond to known attributes" do
@@ -34,7 +34,7 @@ describe Itunes::Library::Track do
         let(:attrs) { params.merge(extras) }
         it "should instantiate" do
           attrs[extras.keys.first].should == extras.values.first
-          expect { Itunes::Library::Track.new(attrs) }.not_to raise_error
+          expect { JtItunes::Library::Track.new(attrs) }.not_to raise_error
         end
 
         it "should respond to known attributes" do
@@ -52,9 +52,9 @@ describe Itunes::Library::Track do
         end
       end
 
-      #FIXME: extract iTunes specifics from the notion of a (general) Track model
+      #FIXME: extract JtiTunes specifics from the notion of a (general) Track model
       context "from an iTunes file" do
-        let(:itunes_data) { Itunes::Library::Generator.generate }
+        let(:itunes_data) { JtItunes::Library::Generator.generate }
         let(:xml_parser) do
           require 'nokogiri'
           mock().tap do |m|
@@ -62,7 +62,7 @@ describe Itunes::Library::Track do
           end
         end
         it "should return the generated track" do
-          parsed_tracks = Itunes::Library::Track.parse(xml_parser)
+          parsed_tracks = JtItunes::Library::Track.parse(xml_parser)
           parsed_tracks.size.should == 1
           parsed_tracks.first.id.should == "1"
           parsed_tracks.first.name.should == "track_1"
@@ -71,9 +71,9 @@ describe Itunes::Library::Track do
     end
   end
 
-  context "without an '#{Itunes::Library::Track._attributes.first}' argument" do
+  context "without an '#{JtItunes::Library::Track._attributes.first}' argument" do
     it "should raise an error" do
-      expect { Itunes::Library::Track.new }.to raise_error(Itunes::Library::Invalid)
+      expect { JtItunes::Library::Track.new }.to raise_error(JtItunes::Library::Invalid)
     end
   end
 end

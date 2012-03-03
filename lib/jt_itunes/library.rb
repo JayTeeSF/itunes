@@ -1,4 +1,4 @@
-module Itunes
+module JtItunes
   class Library
     class Invalid < Exception; end
 
@@ -30,9 +30,9 @@ module Itunes
       require("#{::File.dirname(__FILE__) + '/library'}/#{_file}.rb")
     end
     include MusicSelection
-    include Itunes::Library::Delimitable
+    include JtItunes::Library::Delimitable
     include ClassHelpers
-    include Itunes::Library::Parser::Library
+    include JtItunes::Library::Parser::Library
 
     def csv_header
       ignore_playlists? ?  Track.csv_header : Playlist.csv_header

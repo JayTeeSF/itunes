@@ -1,19 +1,19 @@
-require "#{File.dirname(__FILE__)}/../../../../lib/itunes/library.rb"
+require "#{File.dirname(__FILE__)}/../../../../lib/jt_itunes/library.rb"
 
-describe Itunes::Library::Playlist do
-  context "with an '#{Itunes::Library::Playlist._attributes.first}' argument" do
+describe JtItunes::Library::Playlist do
+  context "with an '#{JtItunes::Library::Playlist._attributes.first}' argument" do
     it "should instantiate" do
-      lambda { Itunes::Library::Playlist.new(Itunes::Library::Playlist._attributes.first => 101) }.should_not raise_error
+      lambda { JtItunes::Library::Playlist.new(JtItunes::Library::Playlist._attributes.first => 101) }.should_not raise_error
     end
 
     context "with all known attributes" do
-      let(:params) { Itunes::Library::Playlist.attr_map}
+      let(:params) { JtItunes::Library::Playlist.attr_map}
       let(:attrs) { params }
-      let(:playlist) { Itunes::Library::Playlist.new(attrs) }
+      let(:playlist) { JtItunes::Library::Playlist.new(attrs) }
       let(:extras) { {:foo => :bar} }
 
       it "should instantiate" do
-        expect { Itunes::Library::Playlist.new(params) }.not_to raise_error
+        expect { JtItunes::Library::Playlist.new(params) }.not_to raise_error
       end
 
       it "should respond to known attributes" do
@@ -34,7 +34,7 @@ describe Itunes::Library::Playlist do
         let(:attrs) { params.merge(extras) }
         it "should instantiate" do
           attrs[extras.keys.first].should == extras.values.first
-          expect { Itunes::Library::Playlist.new(attrs) }.not_to raise_error
+          expect { JtItunes::Library::Playlist.new(attrs) }.not_to raise_error
         end
 
         it "should respond to known attributes" do
@@ -54,7 +54,7 @@ describe Itunes::Library::Playlist do
 
       #FIXME: extract iTunes specifics from the notion of a (general) Playlist model
       context "from an iTunes file" do
-        let(:itunes_data) { Itunes::Library::Generator.generate }
+        let(:itunes_data) { JtItunes::Library::Generator.generate }
         let(:xml_parser) do
           require 'nokogiri'
           mock().tap do |m|
@@ -62,7 +62,7 @@ describe Itunes::Library::Playlist do
           end
         end
         it "should return the generated playlist" do
-          parsed_playlists = Itunes::Library::Playlist.parse(xml_parser)
+          parsed_playlists = JtItunes::Library::Playlist.parse(xml_parser)
           parsed_playlists.size.should == 1
           parsed_playlists.first.id.should == "1"
           parsed_playlists.first.name.should == "playlist_1"
@@ -71,9 +71,9 @@ describe Itunes::Library::Playlist do
     end
   end
 
-  context "without an '#{Itunes::Library::Playlist._attributes.first}' argument" do
+  context "without an '#{JtItunes::Library::Playlist._attributes.first}' argument" do
     it "should raise an error" do
-      lambda { Itunes::Library::Playlist.new }.should raise_error(Itunes::Library::Invalid)
+      lambda { JtItunes::Library::Playlist.new }.should raise_error(JtItunes::Library::Invalid)
     end
   end
 end

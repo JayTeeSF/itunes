@@ -1,14 +1,14 @@
-module Itunes
+module JtItunes
   #File.open("./tmp/foo.xml",'w') do |f|
-  #  f.puts Itunes::Library::Generator.generate
-  #  f.puts Itunes::Library::Generator.generate(:username => "my_home_dir")
+  #  f.puts JtItunes::Library::Generator.generate
+  #  f.puts JtItunes::Library::Generator.generate(:username => "my_home_dir")
   #  OR
-  #  f.puts Itunes::Library::Generator.generate(:music_dir => "./tmp/")
+  #  f.puts JtItunes::Library::Generator.generate(:music_dir => "./tmp/")
   #end
   #
   # Stress test:
   #File.open("./tmp/foo.xml",'w') do |f|
-  #  f.puts Itunes::Library::Generator.generate(:num_tracks => 10_000, :num_playlists => 1500, :tracks_per_playlist => 300)
+  #  f.puts JtItunes::Library::Generator.generate(:num_tracks => 10_000, :num_playlists => 1500, :tracks_per_playlist => 300)
   #end
   module Library::Generator
     extend self

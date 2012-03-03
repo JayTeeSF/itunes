@@ -1,4 +1,4 @@
-module Itunes
+module JtItunes
   module Library::Delimitable
     DELIMITER = "\t"
     #REQUIRED_CLASS_METHODS = [[:_attributes, :csv_header], [:csv_rows, :csv_row, :attr_map]]
@@ -6,7 +6,7 @@ module Itunes
 
     module ClassMethods
       def csv_header
-        _attributes.join(Itunes::Library::Delimitable::DELIMITER)
+        _attributes.join(JtItunes::Library::Delimitable::DELIMITER)
       end
     end
 
