@@ -28,7 +28,7 @@ module Itunes
     private :clear_track_cache
 
     def tracks
-      unless @tracks.present?
+      if @tracks.nil? || @tracks.empty?
         @tracks = Library::Track.lookup_all(track_ids.uniq)
       end
       @tracks
