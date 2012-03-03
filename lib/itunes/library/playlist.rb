@@ -13,7 +13,7 @@ module Itunes
     end
 
     def <<(track_or_track_id)
-      if track_or_track_id.is_a?(Track)
+      if track_or_track_id.is_a?(Library::Track)
         @tracks << track_or_track_id
       else
         clear_track_cache
@@ -28,7 +28,7 @@ module Itunes
     private :clear_track_cache
 
     def tracks
-      @tracks ||= Track.lookup_all(track_ids.uniq)
+      @tracks ||= Library::Track.lookup_all(track_ids.uniq)
     end
 
     def csv_rows
