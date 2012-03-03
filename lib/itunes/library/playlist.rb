@@ -23,12 +23,15 @@ module Itunes
     alias :push :<<
 
     def clear_track_cache
-      @tracks = nil
+      @tracks = []
     end
     private :clear_track_cache
 
     def tracks
-      @tracks ||= Library::Track.lookup_all(track_ids.uniq)
+      unless @tracks.present?
+        @tracks = Library::Track.lookup_all(track_ids.uniq)
+      end
+      @tracks
     end
 
     def csv_rows
