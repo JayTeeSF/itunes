@@ -7,5 +7,16 @@ module JtItunes
     alias :name :title
     alias :name= :title=
     include JtItunes::Library::Delimitable
+
+    def translated(attr)
+      case attr.to_sym
+      when :name
+        :title
+      when :preview_url
+        :location
+      else
+        attr.to_sym
+      end
+    end
   end # Track
 end
