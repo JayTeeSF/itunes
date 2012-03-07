@@ -38,7 +38,7 @@ module JtItunes
 
     def initialize(options={})
       self.class.attr_map.each_pair do |attr, method|
-        send("#{method}=", options[attr]) if options[attr]
+        send("#{method}=", options[attr.to_s] || options[attr.to_sym]) if options[attr.to_s] || options[attr.to_sym]
       end
       raise Library::Invalid, "missing ID" unless id
     end

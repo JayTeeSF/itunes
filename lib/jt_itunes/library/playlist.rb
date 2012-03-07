@@ -8,7 +8,7 @@ module JtItunes
       attr_reader :track_ids
     def initialize(options={})
       clear_track_cache
-      @track_ids = options[:track_ids_key] || []
+      @track_ids = options[:track_ids_key] || options["track_ids_key"] || []
       super
     end
 
