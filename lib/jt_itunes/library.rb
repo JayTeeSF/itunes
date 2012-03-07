@@ -31,7 +31,7 @@ module JtItunes
     end
     include MusicSelection
     include JtItunes::Library::Delimitable
-    include ClassHelpers
+    include ::ClassHelpers
     include JtItunes::Library::Parser::Library
 
     def csv_header

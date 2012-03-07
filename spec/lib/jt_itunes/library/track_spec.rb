@@ -1,4 +1,5 @@
-require "#{File.dirname(__FILE__)}/../../../../lib/jt_itunes/library.rb"
+#require "#{File.dirname(__FILE__)}/../../../../lib/jt_itunes/library.rb"
+require "#{File.dirname(__FILE__)}/../../../../lib/jt_itunes.rb"
 
 describe JtItunes::Library::Track do
   context "with an '#{JtItunes::Library::Track._attributes.first}' argument" do
@@ -14,6 +15,12 @@ describe JtItunes::Library::Track do
 
       it "should instantiate" do
         expect { JtItunes::Library::Track.new(params) }.not_to raise_error
+      end
+
+      it "should respond to allowed extra attributes" do
+        got = track.send(:preview_url)
+        got.should_not be_nil
+        got.should == params[:location]
       end
 
       it "should respond to known attributes" do
