@@ -1,5 +1,5 @@
 module JtItunes
-  require 'class_helpers'
+  require "#{File.dirname(__FILE__) + '/class_helpers.rb'}"
   require 'jt_itunes/railtie' if defined?(Rails)
 end
 
