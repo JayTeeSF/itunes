@@ -41,9 +41,10 @@ module JtItunes
     end
 
     def initialize(options={})
+      tr_options = options.keys.reduce({}) {|memo, key| memo[translated(key)] = options[key]; memo }
       self.class.attr_map.each_pair do |attr, method|
         attr = translated(attr)
-        send("#{method}=", options[attr.to_s] || options[attr.to_sym]) if options[attr.to_s] || options[attr.to_sym]
+        send("#{method}=", tr_options[attr.to_s] || tr_options[attr.to_sym]) if tr_options[attr.to_s] || tr_options[attr.to_sym]
       end
       raise Library::Invalid, "missing ID" unless id
     end
