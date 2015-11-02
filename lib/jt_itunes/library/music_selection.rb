@@ -29,7 +29,7 @@ module JtItunes
 
     def self.included(base)
       base.class_eval do
-        include ObjectCache
+        include ::ObjectCache
         cache :in => :memory # DEFAULT
         extend ClassMethods
         attr_accessor *(base._attributes)
